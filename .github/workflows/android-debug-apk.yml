@@ -1,0 +1,106 @@
+name: Android Debug APK
+
+# 手动触发：只出 arm64 调试签名 APK，不打 tag、不发 Release、不配任何 secret。
+# 步骤照抄 release.yml 的 android job，但签名改用 runner 现场生成的调试 keystore。
+on:
+  workflow_dispatch:
+
+jobs:
+  android:
+    name: Android arm64 (debug-signed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v7
+
+      # 只读版本，不改写任何文件：tauri.conf.json 里已是 1.3.0 / versionCode 1002019，
+      # 跑 scripts/set-version.mjs 会把它改成 1003000，所以这里不跑它。
+      - name: 读取版本
+        id: ver
+        shell: bash
+        run: |
+          V="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          CODE="$(node -p "require('./src-tauri/tauri.conf.json').bundle.android.versionCode")"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "versionCode=$CODE" >> "$GITHUB_OUTPUT"
+          echo "versionName=$V  versionCode=$CODE"
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # ubuntu runner 自带 Android SDK，不再用 android-actions/setup-android（它的 license 交互会卡住）
+      - name: 准备 Android SDK / NDK
+        run: |
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          SDKM="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null 2>&1 || true
+          "$SDKM" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;28.2.13676358"
+          echo "NDK_HOME=$SDK/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          ls "$SDK/ndk"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - uses: swatinem/rust-cache@v2.9.3
+        continue-on-error: true
+        timeout-minutes: 8
+        with:
+          workspaces: src-tauri -> target
+          key: android-debug
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: 生成 Android 工程
+        run: pnpm tauri android init --ci
+
+      - name: 编译 APK（arm64）
+        run: pnpm tauri android build --apk --split-per-abi --target aarch64
+
+      - name: 调试签名并核对
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          APK="$(find src-tauri/gen/android/app/build/outputs/apk -name '*-release-unsigned.apk' | head -1)"
+          if [ -z "$APK" ]; then
+            echo "没有找到 unsigned APK"
+            find src-tauri/gen/android/app/build/outputs/apk -type f || true
+            exit 1
+          fi
+          echo "待签名: $APK"
+          KS="$RUNNER_TEMP/debug.keystore"
+          keytool -genkeypair -v -keystore "$KS" -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+          BT="$(ls "$ANDROID_SDK_ROOT/build-tools" | sort -V | tail -1)"
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/$BT/apksigner"
+          AAPT2="$(ls "$ANDROID_SDK_ROOT"/build-tools/*/aapt2 | sort -V | tail -1)"
+          "$APKSIGNER" sign \
+            --ks "$KS" --ks-key-alias androiddebugkey \
+            --ks-pass "pass:android" --key-pass "pass:android" \
+            --v4-signing-enabled false \
+            --out "artifacts/HGhubX_${VERSION}_arm64.apk" "$APK"
+          rm -f "$KS"
+          "$APKSIGNER" verify --print-certs "artifacts/HGhubX_${VERSION}_arm64.apk"
+          "$AAPT2" dump badging "artifacts/HGhubX_${VERSION}_arm64.apk" | grep -m1 "^package:"
+          ls -lh artifacts
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android-arm64-debug-apk
+          path: artifacts/*.apk
+          if-no-files-found: error
