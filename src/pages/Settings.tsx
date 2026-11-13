@@ -240,14 +240,14 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
             <button onClick={() => setAbout(true)} className="w-full flex items-center gap-3 px-3.5 py-3 text-left pressable">
               <span className="w-8 h-8 rounded-full bg-s3 flex items-center justify-center text-primary"><IInfo size={16} /></span>
               <div className="flex-1">
-                <div className="text-[12.5px] text-on">关于 HGhubX</div>
+                <div className="text-[12.5px] text-on">关于 FIKA</div>
                 <div className="text-[10.5px] text-mut">版本 {APP_VERSION} · 仅限非商业使用</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </button>
           </Section>
 
-          <div className="text-center text-[10px] text-dim mt-5">HGhubX {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} 客户端</div>
+          <div className="text-center text-[10px] text-dim mt-5">FIKA {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} 客户端</div>
         </div>
       </div>
 
@@ -273,10 +273,10 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
       <Modal open={about} onClose={() => setAbout(false)} width={392}>
         <div className="p-5">
           <div className="flex items-center gap-3">
-            <span className="w-11 h-11 rounded-(--r-sm) brand-grad glow-neon flex items-center justify-center text-on-primary text-[17px] font-black">H</span>
+            <span className="w-11 h-11 rounded-(--r-sm) brand-grad glow-neon flex items-center justify-center text-on-primary text-[17px] font-black">F</span>
             <div>
-              <div className="text-[16px] font-bold text-on leading-tight">HGhubX</div>
-              <div className="text-[11px] text-mut mt-0.5">HGhubX 客户端 v{APP_VERSION}</div>
+              <div className="text-[16px] font-bold text-on leading-tight">FIKA</div>
+              <div className="text-[11px] text-mut mt-0.5">FIKA 客户端 v{APP_VERSION}</div>
             </div>
           </div>
 
@@ -318,7 +318,7 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
         <div className="p-5">
           <div className="text-[14.5px] font-bold text-on">清理缓存</div>
           <p className="text-[12px] text-mut leading-relaxed mt-2">
-            只清除封面与播放列表缓存（解密图 / m3u8）。收藏、观看记录、搜索历史与登录状态都会保留。
+            只清除封面与播放列表缓存（解密图 / m3u8）。收藏、观看记录与搜索历史都会保留。
           </p>
           <div className="flex gap-2 mt-5">
             <button onClick={() => setClearOpen(false)} className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[12.5px] text-on/80 pressable">取消</button>

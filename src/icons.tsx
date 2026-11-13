@@ -99,20 +99,19 @@ export const CAT_ICONS: Record<string, ReturnType<typeof S>> = {
 export function Logo({ size = 28, className = "" }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" className={className} aria-hidden>
-      <defs>
-        <linearGradient id="logo-x-night" x1="4" y1="0" x2="60" y2="64" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#06465b" />
-          <stop offset="1" stopColor="#002837" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="17.455" fill="url(#logo-x-night)" />
-      <rect x=".65" y=".65" width="62.7" height="62.7" rx="16.8" fill="none" stroke="#60cdff" strokeOpacity=".14" strokeWidth=".8" />
-      <g transform="translate(-2.909091 -2.909091) scale(1.4545455)">
-        <path d="M14 13v22M14 24h10M24 13v22" stroke="#60cdff" strokeWidth="4.4" strokeLinecap="round" fill="none" />
-        <path d="M31 17.5c3.2 0 5.5 2.6 5.5 6.5S34.2 30.5 31 30.5" stroke="#60cdff" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <rect width="64" height="64" rx="14" fill="#0A66C2" />
+      <g fill="none" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12.5 50 V26 Q12.5 21 17.5 21" />
+        <path d="M8 34 H17.5" />
+        <path d="M23 32 V50" />
+        <path d="M30.5 25 V50" />
+        <path d="M30.5 38 L37 30.5" />
+        <path d="M33.5 35.5 L41 50" />
+        <circle cx="49.5" cy="42" r="7.5" />
+        <path d="M57 34.5 V50" />
       </g>
-      <path d="M40 27.2 46.3 31.9 40 36.6Z" fill="#b1f5dc" />
-      <path d="M46.7 11.3 52.5 17.1M52.5 11.3 46.7 17.1" stroke="#b1f5dc" strokeWidth="2.9" strokeLinecap="round" />
+      <ellipse cx="23" cy="17.5" rx="3.2" ry="4.6" fill="#B6974E" transform="rotate(-25 23 17.5)" />
+      <path d="M23.5 13.8 C21.8 16 25.2 18.8 23.5 21.2" fill="none" stroke="#FFFFFF" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   );
 }

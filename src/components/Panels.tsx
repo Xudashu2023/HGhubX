@@ -52,7 +52,7 @@ export function EpisodesPanel({ videoId, episodes, current, onPick, onClose, bar
 export function CommentsPanel({ videoId, ep, total, kind = "video", onClose }: {
   videoId: number; ep: number; total: number; kind?: "video" | "post"; onClose: () => void;
 }) {
-  const { user, setLoginOpen, toast } = useStore();
+  const { user, toast } = useStore();
   const [items, setItems] = useState<Comment[]>([]);
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
@@ -86,7 +86,7 @@ export function CommentsPanel({ videoId, ep, total, kind = "video", onClose }: {
   const send = async () => {
     const t = text.trim();
     if (!t) return;
-    if (!user) { setLoginOpen(true); return; }
+    if (!user) { toast("游客模式仅可浏览评论", "info"); return; }
     setSending(true);
     try {
       await api.commentSend(videoId, ep, t);
@@ -141,17 +141,20 @@ export function CommentsPanel({ videoId, ep, total, kind = "video", onClose }: {
         )}
       </div>
 
-      <form className="shrink-0 flex items-center gap-2 px-3 py-2.5 bg-s2/70" onSubmit={(e) => { e.preventDefault(); send(); }}>
-        <Avatar size={30} name={user?.nickname || "我"} hue={322} />
-        <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)}
-          onFocus={() => { if (!user) setLoginOpen(true); }}
-          placeholder={user ? "说点什么…" : "登录后参与评论"}
-          className="flex-1 min-w-0 h-9 rounded-(--r-ctl) bg-s4 px-3.5 text-[12.5px] text-on placeholder-dim outline-none focus:bg-s3" />
-        <button type="submit" disabled={!text.trim() || sending}
-          className={`w-9 h-9 rounded-full flex items-center justify-center pressable ${text.trim() ? "brand-grad glow-neon" : "bg-s3 text-dim"}`}>
-          {sending ? <span className="w-4 h-4 spinner" /> : <ISendF size={16} />}
-        </button>
-      </form>
+      {user ? (
+        <form className="shrink-0 flex items-center gap-2 px-3 py-2.5 bg-s2/70" onSubmit={(e) => { e.preventDefault(); send(); }}>
+          <Avatar size={30} name={user?.nickname || "我"} hue={322} />
+          <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)}
+            placeholder="说点什么…"
+            className="flex-1 min-w-0 h-9 rounded-(--r-ctl) bg-s4 px-3.5 text-[12.5px] text-on placeholder-dim outline-none focus:bg-s3" />
+          <button type="submit" disabled={!text.trim() || sending}
+            className={`w-9 h-9 rounded-full flex items-center justify-center pressable ${text.trim() ? "brand-grad glow-neon" : "bg-s3 text-dim"}`}>
+            {sending ? <span className="w-4 h-4 spinner" /> : <ISendF size={16} />}
+          </button>
+        </form>
+      ) : (
+        <div className="shrink-0 px-4 py-3 bg-s2/70 text-center text-[11.5px] text-dim">游客模式仅可浏览评论</div>
+      )}
     </div>
   );
 }

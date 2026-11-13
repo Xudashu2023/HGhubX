@@ -60,7 +60,7 @@ export function DesktopTitleBar({ collapsed, onToggle }: { collapsed: boolean; o
 }
 
 export function DesktopRail({ collapsed }: { collapsed: boolean }) {
-  const { tab, setTab, user, setLoginOpen, push, platform, stack } = useStore();
+  const { tab, setTab, user, push, platform, stack } = useStore();
   /* 从侧栏进入的栈页（排行榜 / 设置）接管高亮，否则「我的」会一直亮着，看起来不像独立页面 */
   const top = stack[stack.length - 1];
   const railPage: "ranks" | "settings" | null =
@@ -103,14 +103,14 @@ export function DesktopRail({ collapsed }: { collapsed: boolean }) {
           </button>
         </div>
         <div className="win-sidebar-bottom">
-          <button className="win-account" onClick={() => { setTab("profile"); if (!user) setLoginOpen(true); }}>
+          <button className="win-account" onClick={() => setTab("profile")}>
             <Avatar size={34} hue={220} name={user?.nickname} icon={user ? undefined : <IUser size={17} />} />
             <span className="win-account-copy">
-              <strong>{user?.nickname || "登录 HGhubX"}</strong>
+              <strong>{user?.nickname || "游客"}</strong>
               <small>{user ? "你的精彩，都在这里" : "留住每一次心动"}</small>
             </span>
           </button>
-          <span className="win-sidebar-version">HGhubX for {platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} {APP_VERSION}</span>
+          <span className="win-sidebar-version">FIKA for {platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} {APP_VERSION}</span>
         </div>
       </div>
     </nav>

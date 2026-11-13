@@ -9,7 +9,7 @@ import { IBack, IGrid, ISearch, IUser } from "../icons";
 
 /* ================= 关注流 ================= */
 export function FollowingPage({ onBack, wide }: { onBack: () => void; wide: boolean }) {
-  const { push, user, setLoginOpen, toast } = useStore();
+  const { push, user, toast } = useStore();
   const [searching, setSearching] = useState(false);
   const [items, setItems] = useState<VideoCard[]>([]);
   const [page, setPage] = useState(0);
@@ -70,8 +70,7 @@ export function FollowingPage({ onBack, wide }: { onBack: () => void; wide: bool
 
       <div className="flex-1 scroll-y px-4 pt-3 pb-8">
         {!user ? (
-          <Empty icon={<IUser size={26} />} title="登录后查看关注流" sub="关注喜欢的作者，第一时间看到他们的新作品"
-            action="去登录" onAction={() => setLoginOpen(true)} />
+          <Empty icon={<IUser size={26} />} title="游客模式暂不支持关注流" sub="关注喜欢的作者，第一时间看到他们的新作品" />
         ) : loading && !items.length ? (
           <div className="flex justify-center py-12"><div className="w-8 h-8 spinner" /></div>
         ) : err && !items.length ? (
@@ -92,7 +91,7 @@ export function FollowingPage({ onBack, wide }: { onBack: () => void; wide: bool
 
 /* ================= 用户主页 ================= */
 export function UserPage({ id, name, onBack, wide }: { id: number; name?: string; onBack: () => void; wide: boolean }) {
-  const { push, toast, follows, toggleFollowLocal, user, setLoginOpen } = useStore();
+  const { push, toast, follows, toggleFollowLocal, user } = useStore();
   const [searching, setSearching] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<{ followers?: number; video_count?: number; post_count?: number; like_count?: number }>({});
@@ -148,8 +147,7 @@ export function UserPage({ id, name, onBack, wide }: { id: number; name?: string
   const onFollow = () => {
     const on = toggleFollowLocal(id);
     toast(on ? `已关注 ${profile?.nickname || name || ""}` : "已取消关注", on ? "ok" : "info");
-    if (!user) { setLoginOpen(true); return; }
-    api.follow(id, on).catch(() => {});
+    if (user) api.follow(id, on).catch(() => {});
   };
 
   return (

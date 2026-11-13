@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "HGhubX",
+  "productName": "FIKA",
   "version": "1.3.0",
   "identifier": "com.hghubx.app",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "HGhubX",
+        "title": "FIKA",
         "width": 1200,
         "height": 780,
         "minWidth": 900,

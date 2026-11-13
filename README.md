@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="hghubx.svg" alt="HGhubX" width="128" height="128" />
+<img src="hghubx.svg" alt="FIKA" width="128" height="128" />
 
-# HGhubX
+# FIKA
 
 **第三方客户端 · Rust + Tauri 2**
 
@@ -36,7 +36,7 @@ Windows / macOS / Linux / Android / iOS · Fluent 设计 · 沉浸式竖屏播�
 > 该仓库与本项目无关，是在旧版本源码基础上擅自加入**卡密验证、VIP 付费解锁**等变现功能的修改版，
 > 代码改动不透明、安全性无法验证。**请勿下载、勿注册、勿付费**；如已安装，建议立即卸载，改用官方 Release 包安装。
 >
-> 本项目**从未、也不会**加入任何卡密 / VIP / 付费解锁 / 广告功能。如果你遇到的「HGhubX」要求输入卡密或付费开通，那一定不是官方版本。
+> 本项目**从未、也不会**加入任何卡密 / VIP / 付费解锁 / 广告功能。如果你遇到的「FIKA」要求输入卡密或付费开通，那一定不是官方版本。
 
 ## 免责声明
 

@@ -38,7 +38,7 @@ const stripHtml = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, "
 
 export default function Feed({ videoIds, startIndex = 0, title = "", mode, kind = "video", active, bottomInset, onBack, onNearEnd, startEp, startTime }: Props) {
   const store = useStore();
-  const { isLiked, isFav, toggleLikeLocal, toggleFavLocal, toggleFollowLocal, muted, setMuted, volume, setVolume, toast, addHistory, user, setLoginOpen, swipeEp, setSwipeEp, preferHevc, setPreferHevc } = store;
+  const { isLiked, isFav, toggleLikeLocal, toggleFavLocal, toggleFollowLocal, muted, setMuted, volume, setVolume, toast, addHistory, user, swipeEp, setSwipeEp, preferHevc, setPreferHevc } = store;
   const isDesktop = !isMobile;
 
   const boxRef = useRef<HTMLDivElement>(null);
@@ -180,7 +180,7 @@ export default function Feed({ videoIds, startIndex = 0, title = "", mode, kind 
         title: detail?.title || cards[curId]?.title || "",
         cover: detail?.cover || cards[curId]?.cover || "",
         desc: detail?.description || "",
-        author: detail?.author?.name || "HGhubX",
+        author: detail?.author?.name || "FIKA",
         authorId: detail?.author?.id || -1,
         tags: detail?.tags || [],
         score: detail?.score || 0,
@@ -796,21 +796,19 @@ export default function Feed({ videoIds, startIndex = 0, title = "", mode, kind 
     } catch { toast("画中画开启失败", "info"); }
   };
 
-  const requireLogin = () => { if (!user) { setLoginOpen(true); return false; } return true; };
-
   const onLike = () => {
     if (!curId) return;
     const on = toggleLikeLocal(curId);
     setHeartBurst((n) => n + 1);
     toast(on ? "已加入喜欢" : "已取消喜欢", on ? "heart" : "info");
-    if (requireLogin()) { if (kind === "post") api.postLike(curId, on).catch(() => {}); else api.like(curId, curEp, on).catch(() => {}); }
+    if (user) { if (kind === "post") api.postLike(curId, on).catch(() => {}); else api.like(curId, curEp, on).catch(() => {}); }
   };
 
   const onFav = () => {
     if (!curId) return;
     const on = toggleFavLocal(curId);
     toast(on ? "已收藏" : "已取消收藏", on ? "star" : "info");
-    if (requireLogin()) { if (kind === "post") api.postCollect(curId, on).catch(() => {}); else api.collect(curId, on).catch(() => {}); }
+    if (user) { if (kind === "post") api.postCollect(curId, on).catch(() => {}); else api.collect(curId, on).catch(() => {}); }
   };
 
   const onFollow = () => {
@@ -818,7 +816,7 @@ export default function Feed({ videoIds, startIndex = 0, title = "", mode, kind 
     if (!uid) return;
     const on = toggleFollowLocal(uid);
     toast(on ? `已关注 ${detail?.author?.name}` : "已取消关注", on ? "ok" : "info");
-    if (requireLogin()) api.follow(uid, on).catch(() => {});
+    if (user) api.follow(uid, on).catch(() => {});
   };
 
   const pickEp = (ep: number) => {

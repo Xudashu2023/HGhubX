@@ -12,7 +12,6 @@ import Feed from "./components/Feed";
 import { PostsPage, PostDetail } from "./pages/Posts";
 import { TopicsPage, TopicPage, TagsPage, TagPage } from "./pages/Discover";
 import { FollowingPage, UserPage } from "./pages/User";
-import LoginModal from "./components/LoginModal";
 import { ToastHost } from "./components/ui";
 import { DesktopRail, DesktopTitleBar } from "./components/DesktopChrome";
 import ResizeHandles from "./components/ResizeHandles";
@@ -120,7 +119,7 @@ function StackPage({ page, onBack, wide, top, bottomInset }: {
 
 /* ============ 应用主体 ============ */
 function AppBody() {
-  const { platform, tab, setTab, stack, pop, loginOpen, setLoginOpen, fs, clean } = useStore();
+  const { platform, tab, setTab, stack, pop, fs, clean } = useStore();
   const mainRef = useRef<HTMLDivElement>(null);
   const [wide, setWide] = useState(!isMobile);
   const [collapsed, setCollapsed] = useState(false);
@@ -142,7 +141,6 @@ function AppBody() {
         if (e.key === "Escape") t.blur();
         return;
       }
-      if (loginOpen) { if (e.key === "Escape") setLoginOpen(false); return; }
       if (e.key === "Escape") { if (stack.length) pop(); return; }
       if (e.key === "/") { e.preventDefault(); setTab("search"); return; }
       if (["1", "2", "3", "4"].includes(e.key) && !e.repeat) {
@@ -151,10 +149,10 @@ function AppBody() {
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [stack.length, pop, setTab, loginOpen, setLoginOpen]);
+  }, [stack.length, pop, setTab]);
 
   const vis = (k: Tab) => (tab === k ? "absolute inset-0" : "absolute inset-0 invisible pointer-events-none");
-  const pageActive = stack.length === 0 && !loginOpen;
+  const pageActive = stack.length === 0;
   const bottomInset = isMobile ? (fs || clean ? 0 : 74) : 14;
   /* 栈页（从搜索/分类/我的进入的播放页、图文页）没有底栏，
      底部只让出安全区。之前多留了 20px，视频底边会露出一条
@@ -199,7 +197,7 @@ function DesktopShell() {
 }
 
 function ShellInner({ collapsed, theater }: { collapsed: boolean; theater: boolean }) {
-  const { stack, pop, loginOpen, setLoginOpen, tab, setTab, platform } = useStore();
+  const { stack, pop, tab, setTab, platform } = useStore();
   const mainRef = useRef<HTMLDivElement>(null);
   const [wide, setWide] = useState(true);
 
@@ -219,7 +217,6 @@ function ShellInner({ collapsed, theater }: { collapsed: boolean; theater: boole
         if (e.key === "Escape") t.blur();
         return;
       }
-      if (loginOpen) { if (e.key === "Escape") setLoginOpen(false); return; }
       if (e.key === "Escape") { if (stack.length) pop(); return; }
       if (e.key === "/") { e.preventDefault(); setTab("search"); return; }
       if (["1", "2", "3", "4"].includes(e.key) && !e.repeat) {
@@ -228,10 +225,10 @@ function ShellInner({ collapsed, theater }: { collapsed: boolean; theater: boole
     };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [stack.length, pop, setTab, loginOpen, setLoginOpen]);
+  }, [stack.length, pop, setTab]);
 
   const vis = (k: Tab) => (tab === k ? "absolute inset-0" : "absolute inset-0 invisible pointer-events-none");
-  const pageActive = stack.length === 0 && !loginOpen;
+  const pageActive = stack.length === 0;
 
   return (
     <div className={`absolute inset-0 flex bg-canvas plat-${platform}`}>
@@ -266,14 +263,14 @@ function MobileShell() {
 
 /* ============ 入口 ============ */
 export default function App() {
-  const { platform, loginOpen, setLoginOpen, tab, setTab, stack, pop, fs, setFs } = useStore();
+  const { platform, tab, setTab, stack, pop, fs, setFs } = useStore();
   useEffect(() => {
-    tracePlayback("navigation.change", { tab, stack: stack.map(p => ({ page: p.kind, key: p.key })), login_open: loginOpen });
-  }, [tab, stack, loginOpen]);
+    tracePlayback("navigation.change", { tab, stack: stack.map(p => ({ page: p.kind, key: p.key })) });
+  }, [tab, stack]);
 
   /* iOS：长按快进会触发 WKWebView 系统文本选择放大镜（loupe），纯 CSS 挡不住。
      原生层已默认关闭文本交互（isTextInteractionEnabled=false）；这里在用户触碰输入框时
-     重新打开、失焦时再关闭，避免影响搜索/评论/登录等文本输入。 */
+     重新打开、失焦时再关闭，避免影响搜索/评论等文本输入。 */
   useEffect(() => {
     if (platform !== "ios") return;
     const setTI = (enabled: boolean) => invoke("set_text_interaction", { enabled }).catch(() => {});
@@ -297,14 +294,13 @@ export default function App() {
   }, [platform]);
 
   /* —— 安卓硬件返回键 ——
-     层级：全屏 → 面板/弹层 → 登录框 → 页面栈 → 回首页 → 退出应用。
+     层级：全屏 → 面板/弹层 → 页面栈 → 回首页 → 退出应用。
      不注册这个监听，Tauri 会直接 webView.goBack() 或退出，表现就是「任意页面返回都回桌面」。 */
   const backRef = useRef<() => void>(() => {});
   backRef.current = () => {
     if (fs) { setFs(false); return; }                        // 沉浸全屏
     if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); return; }
     if (runBack()) return;                                  // 播放器的选集/评论/图文面板
-    if (loginOpen) { setLoginOpen(false); return; }
     if (stack.length) { pop(); return; }
     if (tab !== "home") { setTab("home"); return; }
     invoke("plugin:app|exit", { code: 0 }).catch(() => {});
@@ -340,10 +336,7 @@ export default function App() {
   return (
     <>
       {isMobile ? <MobileShell /> : <DesktopShell />}
-      <LoginModal />
       <ToastHost />
-      {/* 登录遮罩键盘处理占位 */}
-      {loginOpen && <div className="hidden" onClick={() => setLoginOpen(false)} />}
     </>
   );
 }
